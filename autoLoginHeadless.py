@@ -24,7 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-import logging
+from infoLogger import Logger
 
 
 class AutoLogin:
@@ -37,16 +37,9 @@ class AutoLogin:
 
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.INFO)
+        self.logger = Logger().get_logger()
 
-        # コンソールにログを出力するためのハンドラを追加
-        console_handler = logging.StreamHandler()
-        self.logger.addHandler(console_handler)
 
-        # オプションで、ログのフォーマットを設定することもできます
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        console_handler.setFormatter(formatter)
 
     
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
