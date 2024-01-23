@@ -21,7 +21,7 @@ superdelivery_auto_login = AutoLogin()
 
 # superdeliveryにログイン
 superdelivery_auto_login.login(
-    "https://www.petpochitto.com/login.php",  # URL
+    "https://www.tajimaya-oroshi.net/login.php",  # URL
     "info@abitora.jp",  # ID
     "Abitra2577",  # password
     "//input[@name='loginEmail']",  # IDの検索する要素
