@@ -24,7 +24,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-import logging
+from twocaptcha import TwoCaptcha
+from infoLogger import Logger
 
 
 class AutoLogin:
@@ -37,22 +38,19 @@ class AutoLogin:
 
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.INFO)
+        self.logger = Logger().get_logger()
 
-        # コンソールにログを出力するためのハンドラを追加
-        console_handler = logging.StreamHandler()
-        self.logger.addHandler(console_handler)
 
-        # オプションで、ログのフォーマットを設定することもできます
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        console_handler.setFormatter(formatter)
 
     
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
         self.chrome.get(login_url)
 
-        # self.chrome.save_screenshot("screenshot_before.png")  # ログイン後のスクショ
+        current_url = self.chrome.current_url
+
+        solver = TwoCaptcha("a02d008fb7e4bfd5aa447a9465c6d621")
+
+        self.chrome.save_screenshot("screenshot_before.png")  # ログイン後のスクショ
 
         try:
             # userid_xpathが出てくるまで待機
@@ -72,12 +70,34 @@ class AutoLogin:
             password_field.send_keys(password)
             self.logger.info("パスワード入力完了")
 
+
+        except NoSuchElementException as e:
+            print(f"要素が見つからない: {e}")
+
+        try:
+            recaptcha_element = self.chrome.find_elements_by_css_selector("[data-sitekey]")
+            if len(elements) > 0:
+                print("要素が存在します。")
+            else:
+                print("要素が存在しません。")
+                self.logger.info("reCAPTCHAが検出されました")
+                data_sitekey = recaptcha_element.get_attribute("data-sitekey")
+
+                # 2Captchaで解除コードを取得
+                response = solver.recaptcha(sitekey=data_sitekey, url=current_url)
+                code = response['code']
+
+                # 解除コードを所定のtextareaに入力
+                textarea = self.chrome.find_element_by_id('g-recaptcha-response')
+                self.chrome.execute_script(f'arguments[0].value = "{code}";', textarea)
+        except:
+            self.logger.info("reCAPTCHA、なし")
+
             login_button = self.chrome.find_element_by_xpath(login_button_xpath)
             login_button.click()
             self.logger.info("クリック完了")
 
-        except NoSuchElementException as e:
-            print(f"要素が見つからない: {e}")
+
 
         # ページ読み込み待機
         try:
