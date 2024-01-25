@@ -46,11 +46,11 @@ class AutoLogin:
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
         self.chrome.get(login_url)
 
+        # 現在のURL
         current_url = self.chrome.current_url
-
         self.logger.info(current_url)
 
-        self.chrome.save_screenshot("screenshot_before.png")  # ログイン前のスクショ
+        # self.chrome.save_screenshot("screenshot_before.png")  # ログイン前のスクショ
 
         try:
             # userid_xpathが出てくるまで待機
@@ -81,26 +81,37 @@ class AutoLogin:
         self.logger.info("ページは完全に表示されてる")
 
 
-        try:
-            self.logger.info("display:noneを削除開始")
 
-            self.chrome.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="";')
-
-            style = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").style.display')
-
-            self.logger.info(style)
-
-
-        except NoSuchElementException as e:
-            print(f"要素が見つからない: {e}")
-
-        except Exception as e:
-            self.logger.error(f"display:noneを削除中にエラーが発生しました: {e}")
 
         try:
+            # sitekeyを検索
             recaptcha_element = self.chrome.find_element_by_css_selector('[data-sitekey]')
 
             self.logger.info("reCAPTCHAが検出されました")
+            
+            try:
+                self.logger.info("display:noneを削除開始")
+
+                # display:noneを[""](空欄)に書き換え
+                self.chrome.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="";')
+
+                # 現在のdisplayプロパティ内の値を抽出
+                style = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").style.display')
+
+                if style == "":
+                    self.logger.info("display:noneの削除に成功しました")
+                else:
+                    self.logger.info("display:noneの削除に失敗してます")
+
+
+            except NoSuchElementException as e:
+                print(f"要素が見つからない: {e}")
+
+
+            except Exception as e:
+                self.logger.error(f"display:noneを削除中にエラーが発生しました: {e}")
+
+            # sitekeyの値を抽出
             data_sitekey_value = recaptcha_element.get_attribute('data-sitekey')
 
             self.logger.info(f"data_sitekey_value: {data_sitekey_value}")
@@ -114,24 +125,25 @@ class AutoLogin:
             )
 
             try:
+                # レスポンスがあった中のトークン部分を抽出
                 code = result['code']
 
             except Exception as e:
                 self.logger.error(f"エラーが発生しました: {e}")
 
             try:
-                # 解除コードを所定のtextareaに入力
+                # トークンをtextareaに入力
                 textarea = self.chrome.find_element_by_id('g-recaptcha-response')
                 self.chrome.execute_script(f'arguments[0].value = "{code}";', textarea)
 
-                # テキストエリアの値を取得
+                # textareaの値を取得
                 textarea_value = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").value;')
 
-                # 値を出力
-                self.logger.info(F"テキストエリアの値:{textarea_value}")
+                if code == textarea_value:
+                    self.logger.info("textareaにトークン入力完了")
 
             except Exception as e:
-                self.logger.error(f"WebDriverWait中にエラーが発生しました: {e}")
+                self.logger.error(f"トークンの入力に失敗: {e}")
 
 
             self.logger.info("クリック開始")
@@ -162,7 +174,9 @@ class AutoLogin:
             lambda driver: driver.execute_script('return document.readyState') == 'complete'
             )
             self.logger.info("ログインページ読み込み完了")
-            self.chrome.save_screenshot("screenshot_after.png")  # ログイン後のスクショ
+
+            # # ログイン後のスクショ
+            # self.chrome.save_screenshot("screenshot_after.png")
 
         except TimeoutException as e:
             print(f"タイムアウトエラー:{e}")

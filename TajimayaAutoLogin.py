@@ -1,7 +1,7 @@
 # ----------------------------------------------------------------------------------
 # Tajimaya　自動ログイン
 # 2023/1/20制作
-# source autologin-v1/bin/activate
+# 仮想環境 / source autologin-v1/bin/activate
 # reCAPTCHA有り
 
 
@@ -15,7 +15,7 @@
 #---流れ--
 # ID入力=> パス入力=> クリック
 # ----------------------------------------------------------------------------------
-from autoLogin import AutoLogin
+from autoLoginHeadless import AutoLogin
 
 superdelivery_auto_login = AutoLogin()
 
