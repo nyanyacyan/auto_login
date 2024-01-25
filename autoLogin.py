@@ -25,7 +25,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from infoLogger import Logger
-import time
 from solveRecaptcha import solveRecaptcha
 
 
@@ -107,22 +106,20 @@ class AutoLogin:
             self.logger.info(f"data_sitekey_value: {data_sitekey_value}")
             self.logger.info(f"current_url: {current_url}")
 
+            self.logger.info("2captcha開始")
+
             result = solveRecaptcha(
                 data_sitekey_value,
                 current_url
             )
 
             try:
-                self.logger.info("codeの出力")
                 code = result['code']
-
-                print(code)
 
             except Exception as e:
                 self.logger.error(f"エラーが発生しました: {e}")
 
             try:
-                self.logger.info("WebDriverWaitの実行前")
                 # 解除コードを所定のtextareaに入力
                 textarea = self.chrome.find_element_by_id('g-recaptcha-response')
                 self.chrome.execute_script(f'arguments[0].value = "{code}";', textarea)
@@ -136,28 +133,6 @@ class AutoLogin:
             except Exception as e:
                 self.logger.error(f"WebDriverWait中にエラーが発生しました: {e}")
 
-
-            # # iframeにスイッチ
-            # iframe = self.chrome.find_element_by_tag_name("iframe")
-            # self.chrome.switch_to.frame(iframe)
-
-            # # チェックボックスを見つけてクリック
-            # recaptcha_checkbox = self.chrome.find_element_by_class_name("recaptcha-checkbox")
-            # recaptcha_checkbox.click()
-
-            # # メインコンテンツに戻る
-            # self.chrome.switch_to.default_content()
-
-
-            # try:
-            #     self.logger.info("今のドキュメント確認")
-            #     self.chrome.execute_script("document.getElementById('g-recaptcha-response').innerHTML = " + "'" + code + "'")
-
-            # except TimeoutException:
-            #     self.logger.info("タイムアウト")
-            
-            # except Exception as e:
-            #     self.logger.error(f"エラーが発生しました: {e}")
 
             self.logger.info("クリック開始")
 
@@ -179,7 +154,6 @@ class AutoLogin:
             self.chrome.execute_script("arguments[0].click();", login_button)
             self.logger.info("クリック完了")
 
-        time.sleep(20)
 
         # ページ読み込み待機
         try:
@@ -200,5 +174,3 @@ class AutoLogin:
 
         except NoSuchElementException:
             self.logger.info(f"カートの確認が取れませんでした")
-
-        # self.chrome.save_screenshot("screenshot_after.png")  # ログイン後のスクショ
