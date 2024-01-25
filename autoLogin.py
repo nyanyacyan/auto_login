@@ -24,8 +24,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-from twocaptcha import TwoCaptcha
 from infoLogger import Logger
+import time
+from solveRecaptcha import solveRecaptcha
 
 
 class AutoLogin:
@@ -48,9 +49,9 @@ class AutoLogin:
 
         current_url = self.chrome.current_url
 
-        solver = TwoCaptcha("a02d008fb7e4bfd5aa447a9465c6d621")
+        self.logger.info(current_url)
 
-        self.chrome.save_screenshot("screenshot_before.png")  # ログイン後のスクショ
+        self.chrome.save_screenshot("screenshot_before.png")  # ログイン前のスクショ
 
         try:
             # userid_xpathが出てくるまで待機
@@ -64,40 +65,121 @@ class AutoLogin:
         try:
             userid_field = self.chrome.find_element_by_xpath(userid_xpath)
             userid_field.send_keys(userid)
-            self.logger.info("ID入力完了")
+            # self.logger.info("ID入力完了")
 
             password_field = self.chrome.find_element_by_xpath(password_xpath)
             password_field.send_keys(password)
-            self.logger.info("パスワード入力完了")
+            # self.logger.info("パスワード入力完了")
 
 
         except NoSuchElementException as e:
             print(f"要素が見つからない: {e}")
 
+        # ページが完全に読み込まれるまで待機
+        WebDriverWait(self.chrome, 10).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+        self.logger.info("ページは完全に表示されてる")
+
+
         try:
-            recaptcha_element = self.chrome.find_elements_by_css_selector("[data-sitekey]")
-            if len(elements) > 0:
-                print("要素が存在します。")
-            else:
-                print("要素が存在しません。")
-                self.logger.info("reCAPTCHAが検出されました")
-                data_sitekey = recaptcha_element.get_attribute("data-sitekey")
+            self.logger.info("display:noneを削除開始")
 
-                # 2Captchaで解除コードを取得
-                response = solver.recaptcha(sitekey=data_sitekey, url=current_url)
-                code = response['code']
+            self.chrome.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="";')
 
+            style = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").style.display')
+
+            self.logger.info(style)
+
+
+        except NoSuchElementException as e:
+            print(f"要素が見つからない: {e}")
+
+        except Exception as e:
+            self.logger.error(f"display:noneを削除中にエラーが発生しました: {e}")
+
+        try:
+            recaptcha_element = self.chrome.find_element_by_css_selector('[data-sitekey]')
+
+            self.logger.info("reCAPTCHAが検出されました")
+            data_sitekey_value = recaptcha_element.get_attribute('data-sitekey')
+
+            self.logger.info(f"data_sitekey_value: {data_sitekey_value}")
+            self.logger.info(f"current_url: {current_url}")
+
+            result = solveRecaptcha(
+                data_sitekey_value,
+                current_url
+            )
+
+            try:
+                self.logger.info("codeの出力")
+                code = result['code']
+
+                print(code)
+
+            except Exception as e:
+                self.logger.error(f"エラーが発生しました: {e}")
+
+            try:
+                self.logger.info("WebDriverWaitの実行前")
                 # 解除コードを所定のtextareaに入力
                 textarea = self.chrome.find_element_by_id('g-recaptcha-response')
                 self.chrome.execute_script(f'arguments[0].value = "{code}";', textarea)
-        except:
+
+                # テキストエリアの値を取得
+                textarea_value = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").value;')
+
+                # 値を出力
+                self.logger.info(F"テキストエリアの値:{textarea_value}")
+
+            except Exception as e:
+                self.logger.error(f"WebDriverWait中にエラーが発生しました: {e}")
+
+
+            # # iframeにスイッチ
+            # iframe = self.chrome.find_element_by_tag_name("iframe")
+            # self.chrome.switch_to.frame(iframe)
+
+            # # チェックボックスを見つけてクリック
+            # recaptcha_checkbox = self.chrome.find_element_by_class_name("recaptcha-checkbox")
+            # recaptcha_checkbox.click()
+
+            # # メインコンテンツに戻る
+            # self.chrome.switch_to.default_content()
+
+
+            # try:
+            #     self.logger.info("今のドキュメント確認")
+            #     self.chrome.execute_script("document.getElementById('g-recaptcha-response').innerHTML = " + "'" + code + "'")
+
+            # except TimeoutException:
+            #     self.logger.info("タイムアウト")
+            
+            # except Exception as e:
+            #     self.logger.error(f"エラーが発生しました: {e}")
+
+            self.logger.info("クリック開始")
+
+            # ログインボタン要素を見つける
+            login_button = self.chrome.find_element_by_id("recaptcha-submit")
+
+
+            # ボタンが無効化されているか確認し、無効化されていれば有効にする
+            self.chrome.execute_script("document.getElementById('recaptcha-submit').disabled = false;")
+
+            # ボタンをクリックする
+            login_button.click()
+
+
+        except NoSuchElementException:
             self.logger.info("reCAPTCHA、なし")
 
             login_button = self.chrome.find_element_by_xpath(login_button_xpath)
-            login_button.click()
+            self.chrome.execute_script("arguments[0].click();", login_button)
             self.logger.info("クリック完了")
 
-
+        time.sleep(20)
 
         # ページ読み込み待機
         try:
@@ -106,9 +188,7 @@ class AutoLogin:
             lambda driver: driver.execute_script('return document.readyState') == 'complete'
             )
             self.logger.info("ログインページ読み込み完了")
-
             self.chrome.save_screenshot("screenshot_after.png")  # ログイン後のスクショ
-
 
         except TimeoutException as e:
             print(f"タイムアウトエラー:{e}")
@@ -120,3 +200,5 @@ class AutoLogin:
 
         except NoSuchElementException:
             self.logger.info(f"カートの確認が取れませんでした")
+
+        # self.chrome.save_screenshot("screenshot_after.png")  # ログイン後のスクショ

@@ -26,7 +26,7 @@ superdelivery_auto_login.login(
     "Abitra2577",  # password
     "//input[@name='loginEmail']",  # IDの検索する要素
     "//input[@name='loginPassword']",  # パスの検索する要素
-    "//input[@name='login']",  # クリックするボタン検索する要素
-    "//a[contains(@href, 'cart') and .//i[contains(@class, 'fa-shopping-cart')]]"  # カートの有無でログイン確認
+    "//input[@type='submit']",  # クリックするボタン検索する要素
+    "//a[contains(@href, 'cart') and .//i[contains(@class, 'material-icons')]]"  # カートの有無でログイン確認
     )
 

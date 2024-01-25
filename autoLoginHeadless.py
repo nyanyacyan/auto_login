@@ -74,15 +74,23 @@ class AutoLogin:
         except NoSuchElementException as e:
             print(f"要素が見つからない: {e}")
 
+        # ページが完全に読み込まれるまで待機
+        WebDriverWait(self.chrome, 10).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+        self.logger.info("ページは完全に表示されてる")
+
+
         try:
-            recaptcha_element = self.chrome.find_element_by_class_name("__checkbox g-recaptcha")
+            recaptcha_element = self.chrome.find_element_by_css_selector('[data-sitekey]')
+
             if len (recaptcha_element) > 0:
 
                 self.logger.info("reCAPTCHAが検出されました")
-                data_sitekey = recaptcha_element.get_attribute("data-sitekey")
+                data_sitekey_value = recaptcha_element.get_attribute('data-sitekey')
 
                 # 2Captchaで解除コードを取得
-                response = solver.recaptcha(sitekey=data_sitekey, url=current_url)
+                response = solver.recaptcha(sitekey=data_sitekey_value, url=current_url)
                 code = response['code']
 
                 # 解除コードを所定のtextareaに入力
