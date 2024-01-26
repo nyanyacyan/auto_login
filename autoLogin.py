@@ -39,21 +39,27 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from infoLogger import Logger
 from solveRecaptcha import SolverRecaptcha
+from lineNotify import LineNotify
 
 
 class AutoLogin:
     def __init__(self):
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1680,780")
 
         service = Service(ChromeDriverManager().install())
 
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
-        self.logger = Logger().get_logger()
-
+        # recaptcha_solverのインスタンス化を初期化
         self.recaptcha_solver = SolverRecaptcha(self.chrome)
+
+        # LINEインスタンス化を初期化
+        self.line_notify = LineNotify()
+
+        # loggerインスタンス化を初期化
+        self.logger = Logger(self.line_notify).get_logger()
 
 
 

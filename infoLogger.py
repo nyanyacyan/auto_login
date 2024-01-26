@@ -9,9 +9,12 @@
 # ----------------------------------------------------------------------------------
 import logging
 
+
 class Logger:
     def __init__(self):
         self.logger = logging.getLogger()
+
+        # 同じログは表示しないように設定
         if not self.logger.handlers:
             self.logger.setLevel(logging.INFO)
 

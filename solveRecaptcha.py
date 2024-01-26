@@ -20,11 +20,13 @@ import os
 from selenium.common.exceptions import NoSuchElementException
 from infoLogger import Logger
 from twocaptcha import TwoCaptcha
+from lineNotify import LineNotify
 
 
 class SolverRecaptcha:
     def __init__(self, chrome_driver):
         self.logger = Logger().get_logger()
+        self.line_notify = LineNotify()
         self.chrome = chrome_driver
 
         # 2captcha APIkeyを設定
@@ -45,6 +47,8 @@ class SolverRecaptcha:
             return result
         
 
+
+
     def handle_recaptcha(self, current_url):
         try:
             self.logger.info("display:noneを削除開始")
@@ -60,15 +64,15 @@ class SolverRecaptcha:
             if style == "":
                 self.logger.info("display:noneの削除に成功しました")
             else:
-                self.logger.info("display:noneの削除に失敗してます")
-                return
+                raise Exception("display:noneの削除に失敗しました")
 
         except NoSuchElementException as e:
             print(f"要素が見つからない: {e}")
 
         except Exception as e:
-            self.logger.error(f"display:noneを削除中にエラーが発生しました: {e}")
-            return
+            self.logger.info(f"display:noneの削除に失敗しましたので確認が必要です:{e}")
+            self.line_notify.line_notify(f"{e}:詳細はログにてご確認ください")
+            sys.exit(1)
 
 
         # data-sitekeyを検索
@@ -93,7 +97,7 @@ class SolverRecaptcha:
 
         except Exception as e:
             self.logger.error(f"エラーが発生しました: {e}")
-            return
+
 
         try:
             # トークンをtextareaに入力
@@ -108,4 +112,3 @@ class SolverRecaptcha:
 
         except Exception as e:
             self.logger.error(f"トークンの入力に失敗: {e}")
-            return
