@@ -14,23 +14,25 @@
 #---流れ--
 # ２captchaからトークン取得→ トークンをtextareaに入力→ ログイン
 # ----------------------------------------------------------------------------------
-
 import sys
 import os
 from selenium.common.exceptions import NoSuchElementException
 from infoLogger import Logger
 from twocaptcha import TwoCaptcha
 from lineNotify import LineNotify
+from dotenv import load_dotenv
+
 
 
 class SolverRecaptcha:
     def __init__(self, chrome_driver):
+        load_dotenv()
         self.logger = Logger().get_logger()
         self.line_notify = LineNotify()
         self.chrome = chrome_driver
 
         # 2captcha APIkeyを設定
-        self.api_key = os.getenv('APIKEY_2CAPTCHA', 'your_API')
+        self.api_key = os.getenv('APIKEY_2CAPTCHA')
 
     def solveRecaptcha(self, sitekey, url):
         solver = TwoCaptcha(self.api_key)
