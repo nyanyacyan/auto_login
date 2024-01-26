@@ -14,20 +14,6 @@
 #---流れ--
 # ID入力=> パス入力=> クリック
 # ----------------------------------------------------------------------------------
-
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import TimeoutException
-from infoLogger import Logger
-from solveRecaptcha import RecaptchaSolver
-
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -45,22 +31,18 @@ from lineNotify import LineNotify
 class AutoLogin:
     def __init__(self):
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1680,780")
 
         service = Service(ChromeDriverManager().install())
 
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
-        # recaptcha_solverのインスタンス化を初期化
         self.recaptcha_solver = SolverRecaptcha(self.chrome)
 
-        # LINEインスタンス化を初期化
         self.line_notify = LineNotify()
 
-        # loggerインスタンス化を初期化
-        self.logger = Logger(self.line_notify).get_logger()
-
+        self.logger = Logger().get_logger()
 
 
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
@@ -100,8 +82,6 @@ class AutoLogin:
         )
         self.logger.info("ページは完全に表示されてる")
 
-
-
         # reCAPTCHA検知
         try:
             # sitekeyを検索
@@ -115,7 +95,9 @@ class AutoLogin:
                 self.logger.info("reCAPTCHA処理、完了")
 
             except Exception as e:
-                self.logger.error(f"handle_recaptcha を実行中にエラーが発生しました: {e}")
+                self.logger.error("reCAPTCHA処理に失敗しました")
+                # ログイン失敗をライン通知
+                self.line_notify.line_notify("ログインが正しくできませんでした")
 
 
             self.logger.info("クリック開始")
@@ -146,14 +128,17 @@ class AutoLogin:
             )
             self.logger.info("ログインページ読み込み完了")
 
-            # ログイン後のスクショ
-            self.chrome.save_screenshot("screenshot_after.png")
-        except TimeoutException as e:
-            print(f"タイムアウトエラー:{e}")
+            # # # ログイン後のスクショ
+            # self.chrome.save_screenshot("screenshot_after.png")
+        except Exception as e:
+            self.logger.error(f"handle_recaptcha を実行中にエラーが発生しました: {e}")
 
         # ログイン完了確認
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
+
+
         except NoSuchElementException:
             self.logger.info(f"カートの確認が取れませんでした")
+            self.line_notify.line_notify("ログイン失敗してしまいました")

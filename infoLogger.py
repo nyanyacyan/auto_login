@@ -11,6 +11,7 @@ import logging
 
 class LoggerBasicColor(logging.Formatter):
     COLORS = {
+        "INFO": "\033[94m",  # 青色
         "ERROR" : "\033[91m",
     }
 

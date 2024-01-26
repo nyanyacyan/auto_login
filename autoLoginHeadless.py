@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------------
 # 自動ログインクラス
-# headlessモード
+# headlessモード、reCAPTCHA回避、エラー時のみライン通知
 # 2023/1/20制作
 # 仮想環境 / source autologin-v1/bin/activate
 
@@ -15,7 +15,6 @@
 #---流れ--
 # ID入力=> パス入力=> クリック
 # ----------------------------------------------------------------------------------
-import sys
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -97,8 +96,7 @@ class AutoLogin:
                 self.logger.info("reCAPTCHA処理、完了")
 
             except Exception as e:
-                self.logger.info("reCAPTCHA処理に失敗しました")
-                
+                self.logger.error("reCAPTCHA処理に失敗しました")
                 # ログイン失敗をライン通知
                 self.line_notify.line_notify("ログインが正しくできませんでした")
 

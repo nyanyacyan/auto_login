@@ -70,7 +70,7 @@ class SolverRecaptcha:
             print(f"要素が見つからない: {e}")
 
         except Exception as e:
-            self.logger.info(f"display:noneの削除に失敗しましたので確認が必要です:{e}")
+            self.logger.error(f"display:noneの削除に失敗しましたので確認が必要です:{e}")
             self.line_notify.line_notify(f"{e}:詳細はログにてご確認ください")
             sys.exit(1)
 
