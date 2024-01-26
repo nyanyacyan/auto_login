@@ -9,6 +9,17 @@
 # ----------------------------------------------------------------------------------
 import logging
 
+class LoggerBasicColor(logging.Formatter):
+    COLORS = {
+        "ERROR" : "\033[91m",
+    }
+
+    RESET = "\033[0m"
+
+    def format(self, record):
+        message = super().format(record)
+        color = self.COLORS.get(record.levelname, "")
+        return f"{color}{message}{self.RESET}"
 
 class Logger:
     def __init__(self):
@@ -24,6 +35,9 @@ class Logger:
 
             # ログのフォーマットを設定
             log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            console_handler.setFormatter(log_format)
+
+            log_format = LoggerBasicColor('%(asctime)s - %(levelname)s - %(message)s')
             console_handler.setFormatter(log_format)
 
     def get_logger(self):

@@ -30,7 +30,7 @@ class SolverRecaptcha:
         self.chrome = chrome_driver
 
         # 2captcha APIkeyを設定
-        self.api_key = os.getenv('APIKEY_2CAPTCHA', 'a02d008fb7e4bfd5aa447a9465c6d621')
+        self.api_key = os.getenv('APIKEY_2CAPTCHA', 'your_API')
 
     def solveRecaptcha(self, sitekey, url):
         solver = TwoCaptcha(self.api_key)

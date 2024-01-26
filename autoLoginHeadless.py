@@ -97,7 +97,7 @@ class AutoLogin:
                 self.logger.info("reCAPTCHA処理、完了")
 
             except Exception as e:
-                self.Logger.line_notify_handle_exception(e)
+                self.logger.info("reCAPTCHA処理に失敗しました")
                 
                 # ログイン失敗をライン通知
                 self.line_notify.line_notify("ログインが正しくできませんでした")
@@ -131,7 +131,7 @@ class AutoLogin:
             )
             self.logger.info("ログインページ読み込み完了")
 
-            # # ログイン後のスクショ
+            # # # ログイン後のスクショ
             # self.chrome.save_screenshot("screenshot_after.png")
         except Exception as e:
             self.logger.error(f"handle_recaptcha を実行中にエラーが発生しました: {e}")
@@ -140,6 +140,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
+
 
         except NoSuchElementException:
             self.logger.info(f"カートの確認が取れませんでした")
