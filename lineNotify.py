@@ -1,3 +1,4 @@
+# coding: utf-8
 # ----------------------------------------------------------------------------------
 # ライン通知　クラス
 # 2023/1/26制作
@@ -15,9 +16,13 @@ import os
 import requests
 from dotenv import load_dotenv
 
+# モジュール
+from infoLogger import Logger
+
 class LineNotify:
     def __init__(self):
         load_dotenv()
+        self.logger = Logger().get_logger()
         # 作成したトークンを挿入
         # LINE通知したい人を選定してトークン作成=> ここに貼り付ける
         self.line_notify_token = os.getenv('LINE_NOTIFY_TOKEN')
@@ -29,7 +34,13 @@ class LineNotify:
         line_notify_api = 'https://notify-api.line.me/api/notify'
         headers = {'Authorization': f'Bearer {self.line_notify_token}'}
         data = {'message': {notification_message}}
-        requests.post(line_notify_api, headers = headers, data=data)
+
+        response = requests.post(line_notify_api, headers = headers, data=data)
+
+        if response.status_code == 200:
+            self.logger.info("送信成功")
+        else:
+            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 
 
     def line_image_notify(self, notification_message):
@@ -52,7 +63,12 @@ class LineNotify:
         image_dic = {'imageFile': binary}
 
         # LINEに画像とメッセージを送る
-        requests.post(line_notify_api, headers = headers, data=data, files=image_dic)
+        response = requests.post(line_notify_api, headers = headers, data=data, files=image_dic)
+
+        if response.status_code == 200:
+            self.logger.info("送信成功")
+        else:
+            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 
 
 

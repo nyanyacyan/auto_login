@@ -1,3 +1,4 @@
+# coding: utf-8
 # ----------------------------------------------------------------------------------
 # netsea自動ログイン
 # 2023/1/20制作
@@ -16,7 +17,7 @@
 # ----------------------------------------------------------------------------------
 from autoLoginHeadless import AutoLogin
 
-netsea_auto_login = AutoLogin()
+netsea_auto_login = AutoLogin(debug_mode=True)
 
 # netseaにログイン
 netsea_auto_login.login(

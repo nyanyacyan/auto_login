@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------------------
 from autoLoginHeadless import AutoLogin
 
-superdelivery_auto_login = AutoLogin()
+superdelivery_auto_login = AutoLogin(debug_mode=True)
 
 # superdeliveryにログイン
 superdelivery_auto_login.login(

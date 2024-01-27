@@ -1,3 +1,4 @@
+# coding: utf-8
 # ----------------------------------------------------------------------------------
 # ChatWork通知　クラス
 # 2023/1/27制作
@@ -41,7 +42,15 @@ class ChatworkNotify:
 
         headers = { 'X-ChatWorkToken': self.chatwork_notify_token}
         params = {'body': {notification_message}}
-        requests.post(url, headers = headers, params=params)
+
+        response = requests.post(url, headers = headers, params=params)
+
+        if response.status_code == 200:
+            self.logger.info("送信成功")
+        else:
+            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
+
+
 
     def chatwork_image_notify(self, notification_message):
         """
@@ -84,8 +93,10 @@ class ChatworkNotify:
         # chatworkに画像とメッセージを送る
         response = requests.post(url, headers = headers, files=files, data=data)
 
-        print(response.status_code)
-        print(response.text)
+        if response.status_code == 200:
+            self.logger.info("送信成功")
+        else:
+            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 
         time.sleep(5)
 

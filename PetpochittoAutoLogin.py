@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------------------
 from autoLoginHeadless import AutoLogin
 
-petpochitto_auto_login = AutoLogin()
+petpochitto_auto_login = AutoLogin(debug_mode=True)
 
 # petpochittoにログイン
 petpochitto_auto_login.login(

@@ -17,7 +17,7 @@
 from autoLoginHeadless import AutoLogin
 
 
-oroshiuri_auto_login = AutoLogin()
+oroshiuri_auto_login = AutoLogin(debug_mode=True)
 
 # oroshiuriにログイン
 oroshiuri_auto_login.login(

@@ -1,3 +1,4 @@
+# coding: utf-8
 # ----------------------------------------------------------------------------------
 # recaptchaProcessクラス
 # 2023/1/20制作
@@ -23,12 +24,12 @@ class LoggerBasicColor(logging.Formatter):
         return f"{color}{message}{self.RESET}"
 
 class Logger:
-    def __init__(self):
-        self.logger = logging.getLogger()
+    def __init__(self, debug_mode=False):
+        self.logger = logging.getLogger(__name__)
 
         # 同じログは表示しないように設定
         if not self.logger.handlers:
-            self.logger.setLevel(logging.INFO)
+            self.logger.setLevel(logging.DEBUG if debug_mode else logging.INFO)
 
             # コンソールにログを出力するハンドラを追加
             console_handler = logging.StreamHandler()
