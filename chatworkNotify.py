@@ -6,6 +6,8 @@
 
 #---バージョン---
 # Python==3.8.10
+# requests==2.31.0
+# pillow==10.2.0
 
 # ----------------------------------------------------------------------------------
 import os
@@ -43,7 +45,7 @@ class ChatworkNotify:
 
     def chatwork_image_notify(self, notification_message):
         """
-        "Chatwork Notify"からラインメッセージ + 画像通知する
+        "Chatwork Notify"からメッセージ + 画像添付 + 送信後、リサイズ画像削除
         """
         URL = 'https://api.chatwork.com/v2'
 

@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------------
 # 自動ログインクラス
-# headlessモード、reCAPTCHA回避、エラー時のみライン通知
+# headlessモード、reCAPTCHA回避、エラー時のみ通知（ライン、ChatWork、Slack）
 # 2023/1/20制作
 # 仮想環境 / source autologin-v1/bin/activate
 
@@ -148,7 +148,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
-            self.chatwork_notify.chatwork_image_notify("ログインが完了しました。")
+            # self.chatwork_notify.chatwork_image_notify("ログインが完了しました。")
 
 
         except NoSuchElementException:
