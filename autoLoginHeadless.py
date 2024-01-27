@@ -27,14 +27,20 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 
 # モジュール
-from infoLogger import Logger
+from debugLogger import Logger
 from solveRecaptcha import SolverRecaptcha
 from lineNotify import LineNotify
 from chatworkNotify import ChatworkNotify
 
 
 class AutoLogin:
-    def __init__(self, debug_mode=False):
+    def __init__(self, debug_mode=True):
+        # Loggerクラスを初期化
+        self.logger_instance = Logger(__name__, debug_mode=debug_mode)
+        self.logger = self.logger_instance.get_logger()
+        self.debug_mode = debug_mode
+
+
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1680,780")
@@ -42,11 +48,6 @@ class AutoLogin:
         service = Service(ChromeDriverManager().install())
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
-        # Loggerクラスを初期化
-        # 本番では'debug_mode=False'に変更
-        self.logger_instance = Logger(debug_mode=debug_mode)
-        self.logger = self.logger_instance.get_logger()
-        self.debug_mode = debug_mode
 
         # SolverRecaptchaクラスを初期化
         self.recaptcha_solver = SolverRecaptcha(self.chrome)

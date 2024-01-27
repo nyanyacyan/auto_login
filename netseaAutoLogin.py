@@ -17,6 +17,7 @@
 # ----------------------------------------------------------------------------------
 from autoLoginHeadless import AutoLogin
 
+# 本番では'debug_mode=False'に変更
 netsea_auto_login = AutoLogin(debug_mode=True)
 
 # netseaにログイン

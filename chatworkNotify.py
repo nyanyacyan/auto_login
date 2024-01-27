@@ -18,15 +18,19 @@ from PIL import Image
 from dotenv import load_dotenv
 
 # モジュール
-from infoLogger import Logger
+from debugLogger import Logger
 
 
 class ChatworkNotify:
-    def __init__(self):
+    def __init__(self, debug_mode=True):
+        # Loggerクラスを初期化
+        self.logger_instance = Logger(__name__, debug_mode=debug_mode)
+        self.logger = self.logger_instance.get_logger()
+        self.debug_mode = debug_mode
+
+        # トークンを.envから取得
+        # 通知したい部屋を選定（作成）=> .envにルーム番号を貼り付ける
         load_dotenv()
-        self.logger = Logger().get_logger()
-        # 作成したトークンを挿入
-        # LINE通知したい人を選定してトークン作成=> ここに貼り付ける
         self.chatwork_notify_token = os.getenv('CHATWORK_NOTIFY_TOKEN')
         self.chatwork_roomid = os.getenv('CHATWORK_ROOMID')
 

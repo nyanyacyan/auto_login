@@ -17,7 +17,7 @@
 import sys
 import os
 from selenium.common.exceptions import NoSuchElementException
-from infoLogger import Logger
+from debugLogger import Logger
 from twocaptcha import TwoCaptcha
 from lineNotify import LineNotify
 from dotenv import load_dotenv
@@ -25,14 +25,20 @@ from dotenv import load_dotenv
 
 
 class SolverRecaptcha:
-    def __init__(self, chrome_driver):
+    def __init__(self, chrome_driver, debug_mode=False):
+        # Loggerクラスを初期化
+        self.logger_instance = Logger(__name__, debug_mode=debug_mode)
+        self.logger = self.logger_instance.get_logger()
+        self.debug_mode = debug_mode
+
+
         load_dotenv()
-        self.logger = Logger().get_logger()
         self.line_notify = LineNotify()
         self.chrome = chrome_driver
 
-        # 2captcha APIkeyを設定
+        # 2captcha APIkeyを.envから取得
         self.api_key = os.getenv('APIKEY_2CAPTCHA')
+
 
     def solveRecaptcha(self, sitekey, url):
         solver = TwoCaptcha(self.api_key)
@@ -53,7 +59,7 @@ class SolverRecaptcha:
 
     def handle_recaptcha(self, current_url):
         try:
-            self.logger.info("display:noneを削除開始")
+            self.logger.debug("display:noneを削除開始")
 
             # display:noneを[""](空欄)に書き換え
             self.chrome.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="";')
@@ -61,10 +67,10 @@ class SolverRecaptcha:
             # 現在のdisplayプロパティ内の値を抽出
             style = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").style.display')
 
-            self.logger.info(style)
+            self.logger.debug(style)
 
             if style == "":
-                self.logger.info("display:noneの削除に成功しました")
+                self.logger.debug("display:noneの削除に成功しました")
             else:
                 raise Exception("display:noneの削除に失敗しました")
 
@@ -83,8 +89,8 @@ class SolverRecaptcha:
         # sitekeyの値を抽出
         data_sitekey_value = recaptcha_element.get_attribute('data-sitekey')
 
-        self.logger.info(f"data_sitekey_value: {data_sitekey_value}")
-        self.logger.info(f"current_url: {current_url}")
+        self.logger.debug(f"data_sitekey_value: {data_sitekey_value}")
+        self.logger.debug(f"current_url: {current_url}")
 
         self.logger.info("2captcha開始")
 
@@ -110,7 +116,7 @@ class SolverRecaptcha:
             textarea_value = self.chrome.execute_script('return document.getElementById("g-recaptcha-response").value;')
 
             if code == textarea_value:
-                self.logger.info("textareaにトークン入力完了")
+                self.logger.debug("textareaにトークン入力完了")
 
         except Exception as e:
             self.logger.error(f"トークンの入力に失敗: {e}")

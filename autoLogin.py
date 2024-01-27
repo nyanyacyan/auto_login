@@ -24,26 +24,50 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
-from infoLogger import Logger
+
+# モジュール
+from debugLogger import Logger
 from solveRecaptcha import SolverRecaptcha
 from lineNotify import LineNotify
+from chatworkNotify import ChatworkNotify
 
 
 class AutoLogin:
-    def __init__(self):
+    def __init__(self, debug_mode=False):
+        # Loggerクラスを初期化
+        self.logger_instance = Logger(__name__, debug_mode=debug_mode)
+        self.logger = self.logger_instance.get_logger()
+        self.debug_mode = debug_mode
+
+
         chrome_options = Options()
         # chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1680,780")
 
         service = Service(ChromeDriverManager().install())
-
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
+
+        # SolverRecaptchaクラスを初期化
         self.recaptcha_solver = SolverRecaptcha(self.chrome)
 
+        # LineNotifyクラスを初期化
         self.line_notify = LineNotify()
 
-        self.logger = Logger().get_logger()
+        # ChatworkNotifyクラスを初期化
+        self.chatwork_notify = ChatworkNotify()
+
+
+    def take_screenshot(self, filename):
+        """
+        デバッグモード時にログイン前後にスクショを撮る
+        """
+        if self.debug_mode:
+            # 拡張子選択 {.bmp or .png or .jpg(.jpeg)}
+            filename_with_extension = filename + ".jpg"
+            self.chrome.save_screenshot(filename_with_extension)
+            self.logger.debug(f"スクリーンショットを保存しました: {filename_with_extension}")
+
 
 
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
@@ -51,14 +75,15 @@ class AutoLogin:
 
         # 現在のURL
         current_url = self.chrome.current_url
-        self.logger.info(current_url)
+        self.logger.debug(current_url)
 
-        # self.chrome.save_screenshot("screenshot_before.png")  # ログイン前のスクショ
+        # ログイン画面のスクショ
+        self.take_screenshot("login_before_take")
 
         # userid_xpathが出てくるまで待機
         try:
             WebDriverWait(self.chrome, 10).until(EC.presence_of_element_located((By.XPATH, userid_xpath)))
-            self.logger.info("入力開始")
+            self.logger.debug("入力開始")
         
         except TimeoutException as e:
             print(f"タイムアウトエラー:{e}")
@@ -67,11 +92,11 @@ class AutoLogin:
         try:
             userid_field = self.chrome.find_element_by_xpath(userid_xpath)
             userid_field.send_keys(userid)
-            # self.logger.info("ID入力完了")
+            self.logger.debug("ID入力完了")
 
             password_field = self.chrome.find_element_by_xpath(password_xpath)
             password_field.send_keys(password)
-            # self.logger.info("パスワード入力完了")
+            self.logger.debug("パスワード入力完了")
 
         except NoSuchElementException as e:
             print(f"要素が見つからない: {e}")
@@ -81,7 +106,7 @@ class AutoLogin:
         WebDriverWait(self.chrome, 10).until(
             lambda d: d.execute_script("return document.readyState") == "complete"
         )
-        self.logger.info("ページは完全に表示されてる")
+        self.logger.debug("ページは完全に表示されてる")
 
         # reCAPTCHA検知
         try:
@@ -101,7 +126,7 @@ class AutoLogin:
                 self.line_notify.line_notify("ログインが正しくできませんでした")
 
 
-            self.logger.info("クリック開始")
+            self.logger.debug("クリック開始")
 
             # ログインボタン要素を見つける
             login_button = self.chrome.find_element_by_id("recaptcha-submit")
@@ -118,7 +143,7 @@ class AutoLogin:
 
             login_button = self.chrome.find_element_by_xpath(login_button_xpath)
             self.chrome.execute_script("arguments[0].click();", login_button)
-            self.logger.info("クリック完了")
+            self.logger.debug("クリック完了")
 
 
         # ページ読み込み待機
@@ -127,10 +152,11 @@ class AutoLogin:
             WebDriverWait(self.chrome, 10).until(
             lambda driver: driver.execute_script('return document.readyState') == 'complete'
             )
-            self.logger.info("ログインページ読み込み完了")
+            self.logger.debug("ログインページ読み込み完了")
 
-            # # # ログイン後のスクショ
-            # self.chrome.save_screenshot("screenshot_after.png")
+            # ログイン画面のスクショ
+            self.take_screenshot("login_after_take")
+
         except Exception as e:
             self.logger.error(f"handle_recaptcha を実行中にエラーが発生しました: {e}")
 
@@ -138,6 +164,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
+            self.line_notify.line_image_notify("ログインが完了しました。")
 
 
         except NoSuchElementException:

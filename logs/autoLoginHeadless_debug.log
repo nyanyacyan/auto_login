@@ -1,0 +1,11 @@
+2024-01-28 08:33:08,735 - autoLoginHeadless - https://www.superdelivery.com/p/do/clickMemberLogin
+2024-01-28 08:33:09,013 - autoLoginHeadless - スクリーンショットを保存しました: login_before_take.jpg
+2024-01-28 08:33:09,020 - autoLoginHeadless - 入力開始
+2024-01-28 08:33:09,131 - autoLoginHeadless - ID入力完了
+2024-01-28 08:33:09,156 - autoLoginHeadless - パスワード入力完了
+2024-01-28 08:33:09,158 - autoLoginHeadless - ページは完全に表示されてる
+2024-01-28 08:33:09,164 - autoLoginHeadless - reCAPTCHA、なし
+2024-01-28 08:33:10,043 - autoLoginHeadless - クリック完了
+2024-01-28 08:33:10,045 - autoLoginHeadless - ログインページ読み込み完了
+2024-01-28 08:33:10,397 - autoLoginHeadless - スクリーンショットを保存しました: login_after_take.jpg
+2024-01-28 08:33:10,404 - autoLoginHeadless - ログイン完了

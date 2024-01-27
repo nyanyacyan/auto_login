@@ -17,15 +17,22 @@ import requests
 from dotenv import load_dotenv
 
 # モジュール
-from infoLogger import Logger
+from debugLogger import Logger
 
 class LineNotify:
-    def __init__(self):
+    def __init__(self, debug_mode=True):
+        # Loggerクラスを初期化
+        self.logger_instance = Logger(__name__, debug_mode=debug_mode)
+        self.logger = self.logger_instance.get_logger()
+        self.debug_mode = debug_mode
+
+
+        # トークンを.envから取得
+        # LINE通知したい人を選定してトークン作成=> .envに貼り付ける
         load_dotenv()
-        self.logger = Logger().get_logger()
-        # 作成したトークンを挿入
-        # LINE通知したい人を選定してトークン作成=> ここに貼り付ける
         self.line_notify_token = os.getenv('LINE_NOTIFY_TOKEN')
+
+
 
     def line_notify(self, notification_message):
         """
