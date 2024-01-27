@@ -33,7 +33,7 @@ from chatworkNotify import ChatworkNotify
 
 
 class AutoLogin:
-    def __init__(self, debug_mode=False):
+    def __init__(self, debug_mode=True):
         # Loggerクラスを初期化
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
