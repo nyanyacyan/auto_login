@@ -26,6 +26,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
 from infoLogger import Logger
 from solveRecaptcha import SolverRecaptcha
+from chatworkNotify import ChatworkNotify
 from lineNotify import LineNotify
 
 
@@ -42,6 +43,9 @@ class AutoLogin:
         self.recaptcha_solver = SolverRecaptcha(self.chrome)
 
         self.line_notify = LineNotify()
+
+        # ChatworkNotifyクラスを初期化
+        self.chatwork_notify = ChatworkNotify()
 
         self.logger = Logger().get_logger()
 
@@ -138,6 +142,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
+            self.chatwork_notify.chatwork_notify("ログイン失敗してしまいました")
 
 
         except NoSuchElementException:

@@ -15,7 +15,6 @@
 # ID入力=> パス入力=> クリック
 # ----------------------------------------------------------------------------------
 from autoLoginHeadless import AutoLogin
-import logging
 
 
 oroshiuri_auto_login = AutoLogin()

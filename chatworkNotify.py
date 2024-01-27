@@ -17,4 +17,19 @@ class ChatworkNotify:
         load_dotenv()
         # 作成したトークンを挿入
         # LINE通知したい人を選定してトークン作成=> ここに貼り付ける
-        self.line_notify_token = os.getenv('CHATWORK_NOTIFY_TOKEN')
+        self.chatwork_notify_token = os.getenv('CHATWORK_NOTIFY_TOKEN')
+        self.chatwork_roomid = os.getenv('CHATWORK_ROOMID')
+
+
+    def chatwork_notify(self, notification_message):
+        """
+        "chatwork Notify"からラインメッセージのみ通知する
+        """
+        URL = 'https://api.chatwork.com/v2'
+
+        url = URL + '/rooms/' + str(self.chatwork_roomid) + '/messages'
+
+
+        headers = { 'X-ChatWorkToken': self.chatwork_notify_token}
+        params = {'body': {notification_message}}
+        requests.post(url, headers = headers, params=params)
