@@ -24,10 +24,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
+
+# モジュール
 from infoLogger import Logger
 from solveRecaptcha import SolverRecaptcha
-from chatworkNotify import ChatworkNotify
 from lineNotify import LineNotify
+from chatworkNotify import ChatworkNotify
 
 
 class AutoLogin:
@@ -37,17 +39,21 @@ class AutoLogin:
         chrome_options.add_argument("--window-size=1680,780")
 
         service = Service(ChromeDriverManager().install())
-
         self.chrome = webdriver.Chrome(service=service, options=chrome_options)
 
+        # Loggerクラスを初期化
+        self.logger = Logger().get_logger()
+
+        # SolverRecaptchaクラスを初期化
         self.recaptcha_solver = SolverRecaptcha(self.chrome)
 
+        # LineNotifyクラスを初期化
         self.line_notify = LineNotify()
 
         # ChatworkNotifyクラスを初期化
         self.chatwork_notify = ChatworkNotify()
 
-        self.logger = Logger().get_logger()
+
 
 
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
@@ -133,8 +139,8 @@ class AutoLogin:
             )
             self.logger.info("ログインページ読み込み完了")
 
-            # # # ログイン後のスクショ
-            # self.chrome.save_screenshot("screenshot_after.png")
+            # ログイン後のスクショ
+            self.chrome.save_screenshot("screenshot_after.png")
         except Exception as e:
             self.logger.error(f"handle_recaptcha を実行中にエラーが発生しました: {e}")
 
@@ -142,7 +148,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
-            self.chatwork_notify.chatwork_notify("ログイン失敗してしまいました")
+            self.chatwork_notify.chatwork_image_notify("ログインが完了しました。")
 
 
         except NoSuchElementException:
