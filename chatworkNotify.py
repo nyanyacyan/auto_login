@@ -65,11 +65,11 @@ class ChatworkNotify:
         # ChatWork送信時、データ容量上限は「5M」
         # 写真のサイズと解像度を下げて保存する
         try:
-            jpg = Image.open('login_after_take.jpeg')
-            png = jpg.resize((jpg.width // 2, jpg.height // 2))
-            compressed_image = "login_after_take_comp.jpeg"
-            
-            png.save(compressed_image, "PNG")
+            with Image.open('login_after_take.jpeg') as jpg:
+                png = jpg.resize((jpg.width // 2, jpg.height // 2))
+                compressed_image = "login_after_take_comp.jpeg"
+                
+                png.save(compressed_image, "PNG")
 
             if not os.path.exists(compressed_image):
                 raise FileNotFoundError(f"ファイル '{compressed_image}' が見つかりません")
@@ -81,26 +81,32 @@ class ChatworkNotify:
             self.logger.error(f"画像処理でエラーが発生しました: {e}")
 
 
-        # ディレクトリにある画像ファイルを指定する（ファイルもOK）
-        # image_file = 'login_after_take_comp.jpg'
-
         url = URL + '/rooms/' + str(self.chatwork_roomid) + '/files'
-        jpeg_bin = open(compressed_image, 'rb')
         headers = { 'X-ChatWorkToken': self.chatwork_notify_token}
         
         # ファイルの形式の選定
         # Content-Typeでの指定が必要=> "image/png"
-        files = {'file': (compressed_image, jpeg_bin, "image/jpeg")}
+        try:
+            with open(compressed_image, 'rb') as jpeg_bin:
+                files = {'file': (compressed_image, jpeg_bin, "image/jpeg")}
 
-        data = {'message': notification_message}
+                data = {'message': notification_message}
 
-        # chatworkに画像とメッセージを送る
-        response = requests.post(url, headers = headers, files=files, data=data)
+                # chatworkに画像とメッセージを送る
+                response = requests.post(url, headers = headers, data=data, files=files)
 
-        if response.status_code == 200:
-            self.logger.info("送信成功")
-        else:
-            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
+                if response.status_code == 200:
+                    self.logger.info("送信成功")
+                else:
+                    self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
+
+        except FileNotFoundError as e:
+            self.logger.error(f"指定の画像が見つかりません: {e}")
+
+        except Exception as e:
+            self.logger.error(f"画像送信でエラーが発生: {e}")
+
+
 
         time.sleep(5)
 

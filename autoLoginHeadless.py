@@ -31,6 +31,7 @@ from debugLogger import Logger
 from solveRecaptcha import SolverRecaptcha
 from lineNotify import LineNotify
 from chatworkNotify import ChatworkNotify
+from slackNotify import SlackNotify
 
 
 class AutoLogin:
@@ -58,6 +59,8 @@ class AutoLogin:
         # ChatworkNotifyクラスを初期化
         self.chatwork_notify = ChatworkNotify()
 
+        # SlackNotifyクラスを初期化
+        self.slack_notify = SlackNotify()
 
     def take_screenshot(self, filename):
         """
@@ -165,7 +168,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
-            self.chatwork_notify.chatwork_image_notify("ログインが完了しました。")
+            self.line_notify.line_image_notify("ログインが完了しました。")
 
 
         except NoSuchElementException:

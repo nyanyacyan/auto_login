@@ -62,24 +62,28 @@ class LineNotify:
         # 画像ファイルを指定する（png or jpeg）
         try:
             image_file = 'login_after_take.jpeg'
+            with open(image_file, mode= 'rb') as jpeg_bin:
+                files = {'imageFile': (image_file, jpeg_bin, 'image/jpeg')}
+                response = requests.post(line_notify_api, headers = headers, data=data, files=files)
 
+                if response.status_code == 200:
+                    self.logger.info("送信成功")
+                else:
+                    self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
+                    
         except FileNotFoundError as e:
             self.logger.error(f"指定されてるファイルが見つかりません:{e}")
 
         # バイナリデータで読み込む
         # バイナリデータは「0」「1」で構成された機械語に直したデータのこと
-        binary = open(image_file, mode= 'rb')
+        
 
         # 指定の辞書型にする
-        image_dic = {'imageFile': binary}
+        
 
         # LINEに画像とメッセージを送る
-        response = requests.post(line_notify_api, headers = headers, data=data, files=image_dic)
+        
 
-        if response.status_code == 200:
-            self.logger.info("送信成功")
-        else:
-            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 
 
 

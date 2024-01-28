@@ -12,42 +12,41 @@
 
 # ----------------------------------------------------------------------------------
 import os
-import time
 import requests
-from PIL import Image
 from dotenv import load_dotenv
 
 # モジュール
 from debugLogger import Logger
 
-
 class SlackNotify:
-    def __init__(self, debug_mode=True):
+    def __init__(self, debug_mode=False):
         # Loggerクラスを初期化
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode
 
+
         # トークンを.envから取得
-        # 通知したい部屋を選定（作成）=> .envにルーム番号を貼り付ける
+        # 通知するチャンネルから権限を選択=> アプリインストールしてトークン作成=> .envに貼り付ける
+        # slackの場合、メッセージ+画像はNG。画像+コメントになる
         load_dotenv()
         self.slack_notify_token = os.getenv('SLACK_NOTIFY_TOKEN')
         self.slack_channel = os.getenv('SLACK_CHANNEL')
 
 
-    def chatwork_notify(self, notification_message):
+
+    def slack_notify(self, notification_message):
         """
-        "chatwork Notify"からラインメッセージのみ通知する
+        "Slack Notify"からラインメッセージのみ通知する
         """
-        URL = 'https://api.chatwork.com/v2'
+        slack_notify_api = 'https://slack.com/api/chat.postMessage'
+        headers = {'Authorization': f'Bearer {self.slack_notify_token}'}
+        data = {
+            'channel': {self.slack_channel},
+            'text': {notification_message}
+        }
 
-        url = URL + '/rooms/' + str(self.chatwork_roomid) + '/messages'
-
-
-        headers = { 'X-ChatWorkToken': self.chatwork_notify_token}
-        params = {'body': {notification_message}}
-
-        response = requests.post(url, headers = headers, params=params)
+        response = requests.post(slack_notify_api, headers = headers, data=data)
 
         if response.status_code == 200:
             self.logger.info("送信成功")
@@ -55,45 +54,40 @@ class SlackNotify:
             self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 
 
-
-    def chatwork_image_notify(self, notification_message):
+    def slack_image_notify(self, notification_message):
         """
-        "Chatwork Notify"からメッセージ + 画像添付 + 送信後、リサイズ画像削除
+        "Slack Notify"から 画像 + コメント 通知する
         """
-        URL = 'https://api.chatwork.com/v2'
 
 
-        # ディレクトリにある画像ファイルを指定する（ファイルもOK）
-        image_file = 'screenshot_after_compressed.png'
+        slack_files_upload_api = 'https://slack.com/api/files.upload'
+        headers = {'Authorization': f'Bearer {self.slack_notify_token}'}
+        data = {
+            'channels': self.slack_channel,
+            'initial_comment': notification_message,
+            'filename': 'login_after_take.jpeg'
+        }
 
-        url = URL + '/rooms/' + str(self.chatwork_roomid) + '/files'
-        jpeg_bin = open(image_file, 'rb')
-        headers = { 'X-ChatWorkToken': self.chatwork_notify_token}
-        
-        # ファイルの形式の選定
-        # Content-Typeでの指定が必要=> "image/png"
-        files = {'file': (image_file, jpeg_bin, "image/png")}
-
-        data = {'message': notification_message}
-
-        # chatworkに画像とメッセージを送る
-        response = requests.post(url, headers = headers, files=files, data=data)
-
-        if response.status_code == 200:
-            self.logger.info("送信成功")
-        else:
-            self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
-
-        time.sleep(5)
-
-        # 添付した写真を削除
+        # 画像ファイルを指定する（png or jpeg）
         try:
-            if os.path.exists(compressed_image_path):
-                # ファイルを削除
-                os.remove(compressed_image_path)
-                self.logger.info(f"'{compressed_image_path}'を削除しました")
-            else:
-                self.logger.error(f"削除するファイル'{compressed_image_path}' が見つかりませんでした。")
+            image_file = 'login_after_take.jpeg'
+            with open(image_file, 'rb') as jpeg_bin:
+                files = {'file': (image_file, jpeg_bin, 'image/jpeg')}
+                
+                # Slackに画像とメッセージを送る
+                response = requests.post(slack_files_upload_api, headers = headers, data=data, files=files)
 
-        except Exception as e:
-            self.logger.error(f"ファイル削除中にエラーが発生しました: {e}")
+                if response.status_code == 200:
+                    self.logger.info("送信成功")
+                else:
+                    self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
+
+        except FileNotFoundError as e:
+            self.logger.error(f"指定されてるファイルが見つかりません:{e}")
+
+
+
+
+
+
+
