@@ -34,7 +34,7 @@ from chatworkNotify import ChatworkNotify
 
 
 class AutoLogin:
-    def __init__(self, debug_mode=True):
+    def __init__(self, debug_mode=False):
         # Loggerクラスを初期化
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
@@ -65,7 +65,7 @@ class AutoLogin:
         """
         if self.debug_mode:
             # 拡張子選択 {.bmp or .png or .jpg(.jpeg)}
-            filename_with_extension = filename + ".jpg"
+            filename_with_extension = filename + ".jpeg"
             self.chrome.save_screenshot(filename_with_extension)
             self.logger.debug(f"スクリーンショットを保存しました: {filename_with_extension}")
 

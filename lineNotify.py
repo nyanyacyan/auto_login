@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 from debugLogger import Logger
 
 class LineNotify:
-    def __init__(self, debug_mode=True):
+    def __init__(self, debug_mode=False):
         # Loggerクラスを初期化
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
@@ -60,7 +60,11 @@ class LineNotify:
         
 
         # 画像ファイルを指定する（png or jpeg）
-        image_file = 'screenshot_after.png'
+        try:
+            image_file = 'login_after_take.jpeg'
+
+        except FileNotFoundError as e:
+            self.logger.error(f"指定されてるファイルが見つかりません:{e}")
 
         # バイナリデータで読み込む
         # バイナリデータは「0」「1」で構成された機械語に直したデータのこと

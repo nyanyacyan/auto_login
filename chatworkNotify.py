@@ -65,11 +65,11 @@ class ChatworkNotify:
         # ChatWork送信時、データ容量上限は「5M」
         # 写真のサイズと解像度を下げて保存する
         try:
-            png = Image.open('screenshot_after.png')
-            png = png.resize((png.width // 2, png.height // 2))
-            compressed_image_path = "screenshot_after_compressed.png"
+            jpg = Image.open('login_after_take.jpeg')
+            jpg = jpg.resize((jpg.width // 2, jpg.height // 2))
+            compressed_image_path = "screenshot_after_compressed.jpeg"
             
-            png.save(compressed_image_path, "png")
+            jpg.save(compressed_image_path, "jpeg")
 
             if not os.path.exists(compressed_image_path):
                 raise FileNotFoundError(f"ファイル '{compressed_image_path}' が見つかりません")
@@ -82,7 +82,7 @@ class ChatworkNotify:
 
 
         # ディレクトリにある画像ファイルを指定する（ファイルもOK）
-        image_file = 'screenshot_after_compressed.png'
+        image_file = 'login_after_take_comp.jpg'
 
         url = URL + '/rooms/' + str(self.chatwork_roomid) + '/files'
         jpeg_bin = open(image_file, 'rb')
@@ -90,7 +90,7 @@ class ChatworkNotify:
         
         # ファイルの形式の選定
         # Content-Typeでの指定が必要=> "image/png"
-        files = {'file': (image_file, jpeg_bin, "image/png")}
+        files = {'file': (image_file, jpeg_bin, "image/jpeg")}
 
         data = {'message': notification_message}
 
