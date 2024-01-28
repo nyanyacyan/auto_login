@@ -66,13 +66,13 @@ class ChatworkNotify:
         # 写真のサイズと解像度を下げて保存する
         try:
             jpg = Image.open('login_after_take.jpeg')
-            jpg = jpg.resize((jpg.width // 2, jpg.height // 2))
-            compressed_image_path = "screenshot_after_compressed.jpeg"
+            png = jpg.resize((jpg.width // 2, jpg.height // 2))
+            compressed_image = "login_after_take_comp.jpeg"
             
-            jpg.save(compressed_image_path, "jpeg")
+            png.save(compressed_image, "PNG")
 
-            if not os.path.exists(compressed_image_path):
-                raise FileNotFoundError(f"ファイル '{compressed_image_path}' が見つかりません")
+            if not os.path.exists(compressed_image):
+                raise FileNotFoundError(f"ファイル '{compressed_image}' が見つかりません")
 
         except FileNotFoundError as e:
             self.logger.error(f"指定の画像が見つかりません: {e}")
@@ -82,15 +82,15 @@ class ChatworkNotify:
 
 
         # ディレクトリにある画像ファイルを指定する（ファイルもOK）
-        image_file = 'login_after_take_comp.jpg'
+        # image_file = 'login_after_take_comp.jpg'
 
         url = URL + '/rooms/' + str(self.chatwork_roomid) + '/files'
-        jpeg_bin = open(image_file, 'rb')
+        jpeg_bin = open(compressed_image, 'rb')
         headers = { 'X-ChatWorkToken': self.chatwork_notify_token}
         
         # ファイルの形式の選定
         # Content-Typeでの指定が必要=> "image/png"
-        files = {'file': (image_file, jpeg_bin, "image/jpeg")}
+        files = {'file': (compressed_image, jpeg_bin, "image/jpeg")}
 
         data = {'message': notification_message}
 
@@ -106,12 +106,12 @@ class ChatworkNotify:
 
         # 添付した写真を削除
         try:
-            if os.path.exists(compressed_image_path):
+            if os.path.exists(compressed_image):
                 # ファイルを削除
-                os.remove(compressed_image_path)
-                self.logger.info(f"'{compressed_image_path}'を削除しました")
+                os.remove(compressed_image)
+                self.logger.info(f"'{compressed_image}'を削除しました")
             else:
-                self.logger.error(f"削除するファイル'{compressed_image_path}' が見つかりませんでした。")
+                self.logger.error(f"削除するファイル'{compressed_image}' が見つかりませんでした。")
 
         except Exception as e:
             self.logger.error(f"ファイル削除中にエラーが発生しました: {e}")

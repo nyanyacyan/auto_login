@@ -165,7 +165,7 @@ class AutoLogin:
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
-            self.line_notify.line_image_notify("ログインが完了しました。")
+            self.chatwork_notify.chatwork_image_notify("ログインが完了しました。")
 
 
         except NoSuchElementException:
