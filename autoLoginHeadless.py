@@ -46,8 +46,6 @@ class AutoLogin:
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode
 
-        self.config = Config()
-
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1680,780")
