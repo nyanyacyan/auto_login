@@ -31,7 +31,6 @@ import time
 
 # モジュール
 from debugLogger import Logger
-from config import Config
 from solveRecaptcha import SolverRecaptcha
 from lineNotify import LineNotify
 from chatworkNotify import ChatworkNotify
@@ -114,8 +113,6 @@ class AutoLogin:
             self.chrome.find_element_by_css_selector('[data-sitekey]')
             self.logger.info("reCAPTCHA処理実施中")
 
-            self.config.progress_bar(10)
-
 
             # solveRecaptchaファイルを実行
             try:
@@ -142,8 +139,7 @@ class AutoLogin:
 
         # recaptchaなし
         except NoSuchElementException:
-            self.logger.info("reCAPTCHAなし。実行中")
-            self.config.progress_bar(10)
+            self.logger.info("reCAPTCHAなし")
 
             login_button = self.chrome.find_element_by_xpath(login_button_xpath)
             self.chrome.execute_script("arguments[0].click();", login_button)
@@ -186,6 +182,7 @@ class AutoLogin:
             if os.path.exists(login_screenshot_name):
                 os.remove(login_screenshot_name)
                 self.logger.debug(f"'{login_screenshot_name}'を削除")
+                self.logger.info("処理完了")
             else:
                 self.logger.error(f"'{login_screenshot_name}'が見つまりませんでした。")
 
