@@ -14,16 +14,22 @@
 #---流れ--
 # ID入力=> パス入力=> クリック
 # ----------------------------------------------------------------------------------
+from dotenv import load_dotenv
+import os
 from autoLoginHeadless import AutoLogin
 
-# 本番では'debug_mode=False'に変更
-oroshiuri_auto_login = AutoLogin(debug_mode=True)
+
+load_dotenv()  # .env ファイルから環境変数を読み込む
+debug_mode = os.getenv('DEBUG_MODE', 'False') == 'True'  # 環境変数からデバッグモードを取得
+
+# インスタンス作成
+oroshiuri_auto_login = AutoLogin(debug_mode=debug_mode)
 
 # oroshiuriにログイン
 oroshiuri_auto_login.login(
     "https://oroshi-uri.com/login.php",  # URL
-    "info@abitora.jp",  # ID
-    "Abitra2577",  # password
+    os.getenv('LOGIN_ID'),  # ID
+    os.getenv('LOGIN_PASS'),  # password
     "//input[@name='loginEmail']",  # IDの検索する要素
     "//input[@name='loginPassword']",  # パスの検索する要素
     "//input[@name='login']",  # クリックするボタン検索する要素

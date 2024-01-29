@@ -20,19 +20,23 @@ from dotenv import load_dotenv
 # モジュール
 from debugLogger import Logger
 
+load_dotenv()
 
 class ChatworkNotify:
-    def __init__(self, debug_mode=True):
+    def __init__(self):
         # Loggerクラスを初期化
+        debug_mode = os.getenv('DEBUG_MODE', 'False') == 'True'
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode
 
         # トークンを.envから取得
         # 通知したい部屋を選定（作成）=> .envにルーム番号を貼り付ける
-        load_dotenv()
         self.chatwork_notify_token = os.getenv('CHATWORK_NOTIFY_TOKEN')
         self.chatwork_roomid = os.getenv('CHATWORK_ROOMID')
+
+
+
 
 
     def chatwork_notify(self, notification_message):
@@ -65,9 +69,9 @@ class ChatworkNotify:
         # ChatWork送信時、データ容量上限は「5M」
         # 写真のサイズと解像度を下げて保存する
         try:
-            with Image.open('login_after_take.jpeg') as jpg:
-                png = jpg.resize((jpg.width // 2, jpg.height // 2))
-                compressed_image = "login_after_take_comp.jpeg"
+            with Image.open('login_after_take.png') as png:
+                png = png.resize((png.width // 2, png.height // 2))
+                compressed_image = "login_after_take_comp.png"
                 
                 png.save(compressed_image, "PNG")
 
@@ -87,8 +91,8 @@ class ChatworkNotify:
         # ファイルの形式の選定
         # Content-Typeでの指定が必要=> "image/png"
         try:
-            with open(compressed_image, 'rb') as jpeg_bin:
-                files = {'file': (compressed_image, jpeg_bin, "image/jpeg")}
+            with open(compressed_image, 'rb') as png_bin:
+                files = {'file': (compressed_image, png_bin, "image/png")}
 
                 data = {'message': notification_message}
 
@@ -96,7 +100,7 @@ class ChatworkNotify:
                 response = requests.post(url, headers = headers, data=data, files=files)
 
                 if response.status_code == 200:
-                    self.logger.info("送信成功")
+                    self.logger.debug("送信成功")
                 else:
                     self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 
@@ -115,7 +119,7 @@ class ChatworkNotify:
             if os.path.exists(compressed_image):
                 # ファイルを削除
                 os.remove(compressed_image)
-                self.logger.info(f"'{compressed_image}'を削除しました")
+                self.logger.debug(f"'{compressed_image}'を削除しました")
             else:
                 self.logger.error(f"削除するファイル'{compressed_image}' が見つかりませんでした。")
 

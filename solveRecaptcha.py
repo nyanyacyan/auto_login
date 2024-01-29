@@ -22,11 +22,12 @@ from twocaptcha import TwoCaptcha
 from lineNotify import LineNotify
 from dotenv import load_dotenv
 
-
+load_dotenv()
 
 class SolverRecaptcha:
     def __init__(self, chrome_driver, debug_mode=False):
         # Loggerクラスを初期化
+        debug_mode = os.getenv('DEBUG_MODE', 'False') == 'True'
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode

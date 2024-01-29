@@ -25,22 +25,29 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException
+from dotenv import load_dotenv
+import os
+import time
 
 # モジュール
 from debugLogger import Logger
+from config import Config
 from solveRecaptcha import SolverRecaptcha
 from lineNotify import LineNotify
 from chatworkNotify import ChatworkNotify
 from slackNotify import SlackNotify
 
 
+load_dotenv()
 class AutoLogin:
     def __init__(self, debug_mode=False):
         # Loggerクラスを初期化
+        debug_mode = os.getenv('DEBUG_MODE', 'False') == 'True'
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode
 
+        self.config = Config()
 
         chrome_options = Options()
         chrome_options.add_argument("--headless")
@@ -62,17 +69,6 @@ class AutoLogin:
         # SlackNotifyクラスを初期化
         self.slack_notify = SlackNotify()
 
-    def take_screenshot(self, filename):
-        """
-        デバッグモード時にログイン前後にスクショを撮る
-        """
-        if self.debug_mode:
-            # 拡張子選択 {.bmp or .png or .jpg(.jpeg)}
-            filename_with_extension = filename + ".jpeg"
-            self.chrome.save_screenshot(filename_with_extension)
-            self.logger.debug(f"スクリーンショットを保存しました: {filename_with_extension}")
-
-
 
     def login(self, login_url, userid, password, userid_xpath, password_xpath, login_button_xpath, cart_element_xpath):
         self.chrome.get(login_url)
@@ -82,7 +78,7 @@ class AutoLogin:
         self.logger.debug(current_url)
 
         # ログイン画面のスクショ
-        self.take_screenshot("login_before_take")
+        # self.chrome.save_screenshot("login_before_take")
 
         # userid_xpathが出てくるまで待機
         try:
@@ -116,7 +112,9 @@ class AutoLogin:
         try:
             # sitekeyを検索
             self.chrome.find_element_by_css_selector('[data-sitekey]')
-            self.logger.info("reCAPTCHAが検出されました")
+            self.logger.info("reCAPTCHA処理実施中")
+
+            self.config.progress_bar(10)
 
 
             # solveRecaptchaファイルを実行
@@ -141,9 +139,11 @@ class AutoLogin:
             # ボタンをクリックする
             login_button.click()
 
+
         # recaptchaなし
         except NoSuchElementException:
-            self.logger.info("reCAPTCHA、なし")
+            self.logger.info("reCAPTCHAなし。実行中")
+            self.config.progress_bar(10)
 
             login_button = self.chrome.find_element_by_xpath(login_button_xpath)
             self.chrome.execute_script("arguments[0].click();", login_button)
@@ -159,18 +159,35 @@ class AutoLogin:
             self.logger.debug("ログインページ読み込み完了")
 
             # ログイン画面のスクショ
-            self.take_screenshot("login_after_take")
+            login_screenshot_name = "login_after_take.png"
+            self.chrome.save_screenshot(login_screenshot_name)
 
         except Exception as e:
             self.logger.error(f"handle_recaptcha を実行中にエラーが発生しました: {e}")
+
 
         # ログイン完了確認
         try:
             self.chrome.find_element_by_xpath(cart_element_xpath)
             self.logger.info("ログイン完了")
-            self.line_notify.line_image_notify("ログインが完了しました。")
-
+            self.chatwork_notify.chatwork_image_notify("ログインに成功")
 
         except NoSuchElementException:
             self.logger.info(f"カートの確認が取れませんでした")
-            self.line_notify.line_notify("ログイン失敗してしまいました")
+            self.chatwork_notify.chatwork_image_notify("ログインに失敗。")
+            # self.line_notify.line_image_notify("ログインに失敗。")
+            # self.slack_notify.slack_image_notify("ログインに失敗。")
+
+        time.sleep(1)
+
+
+        # スクショファイルを削除
+        try:
+            if os.path.exists(login_screenshot_name):
+                os.remove(login_screenshot_name)
+                self.logger.debug(f"'{login_screenshot_name}'を削除")
+            else:
+                self.logger.error(f"'{login_screenshot_name}'が見つまりませんでした。")
+
+        except Exception as e:
+            self.logger.error(f"ファイル削除中にエラーが発生しました: {e}")

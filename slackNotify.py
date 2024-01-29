@@ -18,9 +18,11 @@ from dotenv import load_dotenv
 # モジュール
 from debugLogger import Logger
 
+load_dotenv()
 class SlackNotify:
-    def __init__(self, debug_mode=False):
+    def __init__(self):
         # Loggerクラスを初期化
+        debug_mode = os.getenv('DEBUG_MODE', 'False') == 'True'
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode
@@ -78,7 +80,7 @@ class SlackNotify:
                 response = requests.post(slack_files_upload_api, headers = headers, data=data, files=files)
 
                 if response.status_code == 200:
-                    self.logger.info("送信成功")
+                    self.logger.debug("送信成功")
                 else:
                     self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
 

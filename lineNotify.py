@@ -19,9 +19,11 @@ from dotenv import load_dotenv
 # モジュール
 from debugLogger import Logger
 
+load_dotenv()
 class LineNotify:
-    def __init__(self, debug_mode=False):
+    def __init__(self):
         # Loggerクラスを初期化
+        debug_mode = os.getenv('DEBUG_MODE', 'False') == 'True'
         self.logger_instance = Logger(__name__, debug_mode=debug_mode)
         self.logger = self.logger_instance.get_logger()
         self.debug_mode = debug_mode
@@ -67,23 +69,9 @@ class LineNotify:
                 response = requests.post(line_notify_api, headers = headers, data=data, files=files)
 
                 if response.status_code == 200:
-                    self.logger.info("送信成功")
+                    self.logger.debug("送信成功")
                 else:
                     self.logger.error(f"送信に失敗しました: ステータスコード {response.status_code},{response.text}")
-                    
+
         except FileNotFoundError as e:
             self.logger.error(f"指定されてるファイルが見つかりません:{e}")
-
-        # バイナリデータで読み込む
-        # バイナリデータは「0」「1」で構成された機械語に直したデータのこと
-        
-
-        # 指定の辞書型にする
-        
-
-        # LINEに画像とメッセージを送る
-        
-
-
-
-
