@@ -1,0 +1,35 @@
+name: Update Requirements
+
+on:
+  schedule:
+    # 毎週月曜日の午前9時（UTC）に実行
+    - cron: '0 9 * * 1'
+  # 手動で実行するためのトリガーも設定可能
+  workflow_dispatch:
+
+jobs:
+  update-requirements:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x' # プロジェクトに適したPythonバージョンを指定
+
+    - name: Install pip-tools
+      run: pip install pip-tools
+
+    - name: Compile requirements.txt
+      run: pip-compile --upgrade requirements.in
+
+    - name: Commit and Push
+      run: |
+        git config --global user.name 'Your Name'
+        git config --global user.email 'your-email@example.com'
+        git add requirements.txt
+        git commit -m "Update requirements.txt"
+        git push
